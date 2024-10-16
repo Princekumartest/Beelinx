@@ -1,10 +1,11 @@
 package com.beelinx.services;
 
-import com.beelinx.controller.ForgotPasswordController;
+
 import com.beelinx.model.OAuthEntity;
+import com.beelinx.model.UserEntity;
 import com.beelinx.repository.jpa.OAuthRepository;
+import com.beelinx.repository.jpa.UserRepository;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
 
 @Service
 public class ForgotPasswordService {
@@ -25,26 +25,29 @@ public class ForgotPasswordService {
     @Autowired
     private OAuthRepository oAuthRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public String forgotPassword(String email) throws MessagingException {
         log.info("Inside forgotPassword");
-        sendRestPasswordEmail(email);
-        return "successfuly send forgot Password Email";
+        OAuthEntity resOAuthEmail=oAuthRepository.findByEmail(email);
+        UserEntity resUserEmail=userRepository.findByEmail(email);
+        log.info("resUserEmail {} ",resUserEmail);
+        log.info("resOAuthEmail {}",resOAuthEmail);
+        if (resOAuthEmail != null || resUserEmail !=null)
+            return sendRestPasswordEmail(email);
+        else
+            return "Email id does not exist" ;
     }
 
-    private void sendRestPasswordEmail(String email) throws MessagingException {
+    private String sendRestPasswordEmail(String email) throws MessagingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         log.info("insert sendRestPasswordEmail ");
         try {
-            // Use MimeMessageHelper to create the email
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(message, true);
-
-            // Set the subject
             mimeMessageHelper.setSubject("Reset Your Account Password");
-
-            // Extracting the name from the email
             String userName = extractNameFromEmail(email);
             log.info("userName {}", userName);
-
             String emailContent = String.format(
                     "Hi %s,<br><br>" +
                             "We received a request to reset your Email password. Please click on the link below to update your password:<br><br>" +
@@ -54,29 +57,21 @@ public class ForgotPasswordService {
                     userName,
                     email
             );
-
-
             log.info("emailContent {} ",emailContent);
             mimeMessageHelper.setText(emailContent, true); // true indicates HTML content
-
             mimeMessageHelper.setTo(email);
-
             log.info("Ready to send mail ");
-            // Send the email
             javaMailSender.send(message);
             log.info("Reset password email sent successfully.");
-
+            return  "Success";
         } catch (Exception e) {
             throw new RuntimeException("Failed to send email", e);
         }
     }
 
     private String extractNameFromEmail(String email) {
-        // Extract the part before "@" and replace "." with a space
         String namePart = email.split("@")[0]; // Get the part before '@'
         String[] nameParts = namePart.split("\\."); // Split by '.'
-
-        // Capitalize first letter of each part and combine
         StringBuilder nameBuilder = new StringBuilder();
         for (String part : nameParts) {
             if (part.length() > 0) {
@@ -91,22 +86,30 @@ public class ForgotPasswordService {
     }
 
     public String setNewPassword(String email, String newPassword) {
-        // Check if the email already exists in the repository
-        OAuthEntity existingEntity = oAuthRepository.findByEmail(email);
+        log.info("inside setNewPassword");
+        OAuthEntity resOAuthEmail = oAuthRepository.findByEmail(email);
+        UserEntity resUserEmail=userRepository.findByEmail(email);
+        log.info("resUserEmail {} ",resUserEmail);
+        log.info("resOAuthEmail {}",resOAuthEmail);
+        if(resOAuthEmail != null && resUserEmail !=null){
+            resOAuthEmail.setPassword(newPassword);
+            oAuthRepository.save(resOAuthEmail);
+            resUserEmail.setPassword(newPassword);
+            userRepository.save(resUserEmail);
+            return "Success";
+        }
+        else if (resOAuthEmail != null){
+            resOAuthEmail.setPassword(newPassword);
+            oAuthRepository.save(resOAuthEmail);
+            return "Success"; }
+        else if (resUserEmail !=null){
+            resUserEmail.setPassword(newPassword);
+            userRepository.save(resUserEmail);
+            return "Success";
+        }
+        else {
+            return "Email id does not exist" ;
 
-        // If the email exists, update the password
-        if (existingEntity != null) {
-            existingEntity.setPassword(newPassword);
-            oAuthRepository.save(existingEntity);
-            return "Password reset successfully";
-        } else {
-            // If the email does not exist, create a new entity
-            OAuthEntity oAuthEntity = new OAuthEntity();
-            oAuthEntity.setEmail(email);
-            oAuthEntity.setPassword(newPassword);
-            oAuthEntity.setName(extractNameFromEmail(email)); // Extract name from email
-            oAuthRepository.save(oAuthEntity);
-            return "Account created successfully with new password";
         }
     }
 
