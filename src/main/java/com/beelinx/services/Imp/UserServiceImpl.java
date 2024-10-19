@@ -7,11 +7,10 @@ import com.beelinx.services.UserService;
 import com.beelinx.dto.UserDto;
 import com.beelinx.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.ValidationException;
 import java.util.List;
 
 @Service
@@ -29,12 +28,20 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtUserDetailsServiceImpl jwtUserDetailsService;
+
     @Override
-    public UserDto registerUser(UserEntity user) {
+    public UserDto signUp(UserEntity user ) throws Exception{
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        UserEntity updatedUser = userRepository.save(user);
-        return userMapper.mapToDto(updatedUser);
+        try{
+            UserEntity updatedUser = userRepository.save(user);
+            return userMapper.mapToDto(updatedUser);
+        }catch(Exception ex){
+
+            throw new ValidationException("Failed to register User: " + ex.getMessage());
+        }
     }
 
     @Override
@@ -42,5 +49,4 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findAll().stream().map(userMapper::mapToDto).toList();
     }
-
 }

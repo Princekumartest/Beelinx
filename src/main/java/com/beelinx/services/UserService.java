@@ -6,8 +6,7 @@ import java.util.List;
 
 public interface UserService {
 
-    UserDto registerUser(UserEntity user);
+    UserDto signUp(UserEntity user) throws Exception;
 
     List<UserDto> getAllUser();
-
 }
