@@ -32,7 +32,7 @@ public class UserControllerImpl implements UserController {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    @PostMapping("/sign-up")
+    @GetMapping("/sign-up")
     public ResponseEntity<ApiResponseMessage> signup(@RequestBody @Valid UserEntity user,
                                                      @RequestHeader Map<String, String> headers) throws ValidationException {
         user.setCreatedAt(new Date());

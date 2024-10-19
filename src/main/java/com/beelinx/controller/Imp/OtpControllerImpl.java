@@ -21,7 +21,7 @@ public class OtpControllerImpl {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping("/send-sms-otp")
+    @GetMapping("/send-sms-otp")
     public ResponseEntity<?> sendMobileOtp(@RequestParam String mobileNumber) throws Exception {
 
         try{

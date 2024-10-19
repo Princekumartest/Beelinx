@@ -30,8 +30,12 @@ public class WebSecurityConfig {
 
     private static final String[] IGNORE_AUTH_ENDPOINTS = {
             "/v3/api-docs/**",
-            "/api/v1/log-in",
-            "/api/v1/sign-up"
+            "/api/v1/user/log-in",
+            "/api/v1/user/sign-up",
+            "/api/v1/otp/send-sms-otp",
+            "/api/v1/otp/verify-sms-otp",
+            "/api/v1/otp/send-email-otp",
+            "/api/v1/otp/verify-email-otp"
     };
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;

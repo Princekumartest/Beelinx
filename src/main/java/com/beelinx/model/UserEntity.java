@@ -24,14 +24,14 @@ import java.util.Date;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "full_name", unique = false)
+    @Column(name = "full_name")
     private String fullName;
 
-    @Column(name = "mobile_number")//, unique = true
-    //@NotBlank(message = "Mobile number is required")
+    @Column(name = "mobile_number", unique = true)
+    @NotBlank(message = "Mobile number is required")
     //@Pattern(regexp = "^([+]\\d{2})?\\d{10}$", message = "Mobile number must be 10 digits")
     private String mobileNumber;
 
@@ -44,8 +44,8 @@ public class UserEntity {
     @Column(name = "email_otp_verified")
     private boolean emailOtpVerified = false;
 
-   // @NotBlank(message = "Email is required")
-    @Column(name = "email_address")//, unique = true
+    @NotBlank(message = "Email is required")
+    @Column(name = "email_address", unique = true)
     @Email(message = "invalid email address")
     private String email;
 
@@ -53,9 +53,9 @@ public class UserEntity {
     private String emailOtp;
 
     @Column(name = "password")
-   // @NotBlank(message = "Password is required")
-    //@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*]).{8,}$",
-     //       message = "Password must be at least 8 characters uppercase lowercase number special character")
+    @NotBlank(message = "Password is required")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*]).{8,}$",
+            message = "Password must be at least 8 characters uppercase lowercase number special character")
     private String password;
 
     @CreationTimestamp
@@ -76,7 +76,7 @@ public class UserEntity {
     @LastModifiedBy
     private String updatedBy;
 
-    @Column(name = "active")
+    @Column(name = "user-active")
     private boolean active;
 
     private LocalDateTime forEmailOtp;
