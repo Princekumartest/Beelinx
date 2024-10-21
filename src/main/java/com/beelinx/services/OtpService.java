@@ -11,5 +11,4 @@ public interface OtpService {
     boolean verifyEmail(String email, String otp) throws Exception;
 
     String generateOtp();
-
 }

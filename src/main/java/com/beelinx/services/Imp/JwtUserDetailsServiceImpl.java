@@ -29,5 +29,4 @@ public class JwtUserDetailsServiceImpl implements UserDetailsService {
             // Return the UserDetails with the password and roles/authorities
             return new User(user.getEmail(), user.getPassword(), new ArrayList<>());
     }
-
 }

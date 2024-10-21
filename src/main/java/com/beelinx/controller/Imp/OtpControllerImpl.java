@@ -4,6 +4,9 @@ import com.beelinx.helper.ApiResponseMessage;
 import com.beelinx.helper.OtpResponse;
 import com.beelinx.repository.jpa.UserRepository;
 import com.beelinx.services.OtpService;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/otp")
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class OtpControllerImpl {
 
-    @Autowired
-    private OtpService otpService;
-
-    @Autowired
-    private UserRepository userRepository;
+    final OtpService otpService;
 
     @GetMapping("/send-sms-otp")
     public ResponseEntity<?> sendMobileOtp(@RequestParam String mobileNumber) throws Exception {
@@ -37,28 +38,28 @@ public class OtpControllerImpl {
         }
     }
 
-    @PostMapping("/verify-sms-otp")
+    @GetMapping("/verify-sms-otp")
     public ResponseEntity<?> verifySmsOtp(@RequestParam String mobileNumber, @RequestParam String otp) {
         try {
             boolean isOtpValid = otpService.verifyMobile(mobileNumber, otp);
 
             if (isOtpValid) {
-                OtpResponse response = new OtpResponse("Mobile OTP validated successfully");
+                OtpResponse response = new OtpResponse("Mobile Verified Successfully");
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
-                OtpResponse response = new OtpResponse("OTP validation expired, Please try again!");
+                OtpResponse response = new OtpResponse("OTP Validation Expired, Please try again!");
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
         } catch (RuntimeException e) {
             OtpResponse response = new OtpResponse(e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            OtpResponse response = new OtpResponse("An error occurred");
+            OtpResponse response = new OtpResponse("Mobile is already Verified");
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PostMapping("/send-email-otp")
+    @GetMapping("/send-email-otp")
     public ResponseEntity<?> sendOtpEmail(@RequestParam String email) throws Exception {
         try {
             otpService.sendEmailOtp(email);
@@ -73,22 +74,22 @@ public class OtpControllerImpl {
         }
     }
 
-    @PostMapping("/verify-email-otp")
+    @GetMapping("/verify-email-otp")
     public ResponseEntity<?> verifyEmail(@RequestParam String email, @RequestParam String otp) {
         try {
             boolean isOtpValid = otpService.verifyEmail(email, otp);
             if (isOtpValid) {
-                OtpResponse response = new OtpResponse("Email OTP validated successfully");
+                OtpResponse response = new OtpResponse("Email Verified Successfully");
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
-                OtpResponse response = new OtpResponse("OTP validation expired, Please try again!");
+                OtpResponse response = new OtpResponse("OTP Validation Expired, Please try again!");
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
         } catch (RuntimeException e) {
             OtpResponse response = new OtpResponse(e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            OtpResponse response = new OtpResponse("An error occurred");
+            OtpResponse response = new OtpResponse("Email is already Verified");
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

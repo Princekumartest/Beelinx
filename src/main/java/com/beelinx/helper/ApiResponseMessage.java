@@ -39,4 +39,14 @@ public class ApiResponseMessage {
             this.statusCode = statusCode;
         }
 
+
+        @Override
+        public String toString() {
+            return "ApiResponseMessage{" +
+                    "message='" + message + '\'' +
+                    ", status='" + status + '\'' +
+                    ", statusCode=" + statusCode +
+                    '}';
+        }
+
 }

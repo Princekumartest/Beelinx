@@ -10,16 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class BeelinxApplication {
 
-/*	@Autowired
-	private TwilioConfig twilioConfig;
-
-	@PostConstruct
-	public void setup() {
-		Twilio.init(twilioConfig.getAccountSid(), twilioConfig.getAuthToken());
-	}*/
-
 	public static void main(String[] args) {
 		SpringApplication.run(BeelinxApplication.class, args);
 	}
-
 }

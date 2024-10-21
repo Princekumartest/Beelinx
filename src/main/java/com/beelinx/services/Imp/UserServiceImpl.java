@@ -6,6 +6,9 @@ import com.beelinx.repository.spec.UserSpecification;
 import com.beelinx.services.UserService;
 import com.beelinx.dto.UserDto;
 import com.beelinx.mapper.UserMapper;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,22 +17,15 @@ import javax.xml.bind.ValidationException;
 import java.util.List;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    final UserRepository userRepository;
 
-    @Autowired
-    private UserSpecification userSpecification;
+    final UserMapper userMapper;
 
-    @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUserDetailsServiceImpl jwtUserDetailsService;
+    final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDto signUp(UserEntity user ) throws Exception{
@@ -39,7 +35,6 @@ public class UserServiceImpl implements UserService {
             UserEntity updatedUser = userRepository.save(user);
             return userMapper.mapToDto(updatedUser);
         }catch(Exception ex){
-
             throw new ValidationException("Failed to register User: " + ex.getMessage());
         }
     }
@@ -50,3 +45,5 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll().stream().map(userMapper::mapToDto).toList();
     }
 }
+
+

@@ -22,14 +22,15 @@ public class EmailUtil {
 
       javaMailSender.send(mimeMessage);
   }
-  /*public void sendOtpEmail(String email, String otp) throws MessagingException {
+
+/*  public void sendOtpEmail(String email, String otp) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
         mimeMessageHelper.setTo(email);
         mimeMessageHelper.setSubject("Verify OTP");
         mimeMessageHelper.setText("""
                 <div>
-                  <a href="http://localhost:9090/api/v1/verified?email=%s&otp=%s" target="_blank">click link to verify</a>
+                  <a href="http://localhost:8080/api/v1/otp/verify-email-otp?email=%s&otp=%s" target="_blank">click link to verify</a>
                 </div>
                 """.formatted(email, otp), true);
 

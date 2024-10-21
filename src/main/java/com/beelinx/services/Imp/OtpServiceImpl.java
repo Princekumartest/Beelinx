@@ -9,38 +9,25 @@ import com.beelinx.repository.spec.UserSpecification;
 import com.beelinx.services.OtpService;
 import com.twilio.type.PhoneNumber;
 import com.twilio.rest.api.v2010.account.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OtpServiceImpl implements OtpService {
 
-    @Autowired
-    TwilioConfig twilioConfig;
+    final TwilioConfig twilioConfig;
 
-    @Autowired
-    UserRepository userRepository;
+    final UserRepository userRepository;
 
-    @Autowired
-    UserSpecification userSpecification;
-
-    @Autowired
-    UserServiceImpl userService;
-
-    @Autowired
-    private EmailUtil emailUtil;
-
+    final EmailUtil emailUtil;
 
     @Override
     public void sendMobileOtp(String mobileNumber) throws Exception {
@@ -69,36 +56,32 @@ public class OtpServiceImpl implements OtpService {
      * @param mobileNumber The mobile number to verify the OTP against.
      * @param otp The OTP code to verify
      */
-
+    @Override
     public boolean verifyMobile(String mobileNumber, String otp) throws Exception {
         UserEntity userEntity = userRepository.findByMobileNumber(mobileNumber);
 
         if (userEntity == null) {
             throw new Exception("User not found for mobile number: " + mobileNumber);
         }
-
+        if (userEntity.isMobileOtpVerified()) {
+            throw new Exception("Email is already verified.");
+        }
         try {
             String decryptedOtp = EncryptionOTP.decrypt(userEntity.getMobileOtp());
 
             if (decryptedOtp.equals(otp) &&
                     Duration.between(userEntity.getForMobileOtp(),
-                            LocalDateTime.now()).getSeconds() < (10 * 60)) {
-
-                // Set mobile OTP as verified
+                            LocalDateTime.now()).getSeconds() < (5 * 60)) {
                 userEntity.setMobileOtpVerified(true);
-
-                // Check if both email and mobile are verified
                 if (userEntity.isEmailOtpVerified()) {
                     userEntity.setActive(true);
                 }
-
                 userRepository.save(userEntity);
                 return true;
             }
         } catch (Exception e) {
             throw new RuntimeException("Error decrypting OTP", e);
         }
-
         return false;
     }
 
@@ -121,30 +104,28 @@ public class OtpServiceImpl implements OtpService {
             userEntity.setEmailOtp(encryptedOtp);
             userEntity.setForEmailOtp(LocalDateTime.now());
             userRepository.save(userEntity);
-            // Send email
             emailUtil.sendOtpEmail(email, otp);
         } catch (Exception e) {
             throw new RuntimeException("Error while sending OTP Email", e);
         }
     }
 
+    @Override
     public boolean verifyEmail(String email, String otp) throws Exception {
-        UserEntity userEntity = userRepository.findByEmail(email);
 
+        UserEntity userEntity = userRepository.findByEmail(email);
         if (userEntity == null) {
             throw new Exception("User not found for this email: " + email);
+        }
+        if (userEntity.isEmailOtpVerified()) {
+            throw new Exception("Email is already verified.");
         }
         try {
             String decryptedOtp = EncryptionOTP.decrypt(userEntity.getEmailOtp());
 
             if (decryptedOtp.equals(otp) &&
-                    Duration.between(userEntity.getForEmailOtp(),
-                            LocalDateTime.now()).getSeconds() < (10 * 60)) {
-
-                // Set email OTP as verified
+                    Duration.between(userEntity.getForEmailOtp(), LocalDateTime.now()).getSeconds() < (5 * 60)) {
                 userEntity.setEmailOtpVerified(true);
-
-                // Check if both email and mobile are verified
                 if (userEntity.isMobileOtpVerified()) {
                     userEntity.setActive(true);
                 }
@@ -161,12 +142,14 @@ public class OtpServiceImpl implements OtpService {
         PhoneNumber recipientPhoneNumber = new PhoneNumber(mobileNumber);
         PhoneNumber senderPhoneNumber = new PhoneNumber(twilioConfig.getPhoneNumber());
 
-        String msgBody = "Your One Time Password (OTP) is " + otp;
+        String msgBody = "Your One Time Password (OTP) is "+ (otp) + ". This OTP is valid for 5 minutes";
         Message.creator(recipientPhoneNumber, senderPhoneNumber, msgBody).create();
     }
 
+    @Override
     public String generateOtp() {
         int otp = (int) (Math.random() * 1000000);
         return String.format("%06d", otp);
     }
 }
+

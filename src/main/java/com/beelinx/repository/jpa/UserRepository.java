@@ -19,4 +19,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpec
 
         UserEntity findByMobileNumber(String mobileNumber);
 
+        boolean existsByMobileNumber(String phoneNumber);
+
 }

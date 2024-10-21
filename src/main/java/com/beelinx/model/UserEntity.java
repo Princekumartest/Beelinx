@@ -10,7 +10,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.core.userdetails.User;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -30,7 +29,7 @@ public class UserEntity {
     @Column(name = "full_name")
     private String fullName;
 
-    @Column(name = "mobile_number", unique = true)
+    @Column(name = "mobile_number")   //  , unique = true
     @NotBlank(message = "Mobile number is required")
     //@Pattern(regexp = "^([+]\\d{2})?\\d{10}$", message = "Mobile number must be 10 digits")
     private String mobileNumber;
@@ -47,6 +46,8 @@ public class UserEntity {
     @NotBlank(message = "Email is required")
     @Column(name = "email_address", unique = true)
     @Email(message = "invalid email address")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            message = "Must be at least characters uppercase lowercase number special character")
     private String email;
 
     @Column(name = "email_otp")

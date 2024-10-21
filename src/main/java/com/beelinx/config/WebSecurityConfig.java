@@ -85,6 +85,14 @@ public class WebSecurityConfig {
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
+ /*   @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("*")   // Customize this for security in production
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+    }*/
+
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
